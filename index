@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian Hotel Booking Assistant 🏨 </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #FF6B6B;
+            --secondary: #4ECDC4;
+            --accent: #FFE66D;
+            --bg: #1A1A1A;
+            --gradient-start: rgba(255, 107, 107, 0.9);
+            --gradient-end: rgba(78, 205, 196, 0.9);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg) 0%, #2d2d2d 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)),
+                        url('https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1350&q=80') no-repeat center center/cover;
+            opacity: 0.15;
+            z-index: -1;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: slideDown 0.5s ease;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 15px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header .credit {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 0.5rem;
+        }
+
+        .chat-container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .chat-messages {
+            height: 60vh;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 1.2rem;
+            border-radius: 15px;
+            animation: popIn 0.3s ease;
+            background: rgba(255, 255, 255, 0.2);
+            align-self: flex-start;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: rgba(255, 107, 107, 0.3);
+        }
+
+        .options-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .option-btn {
+            padding: 0.8rem 1.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .option-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .input-container {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        input {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 1rem;
+        }
+
+        input:focus {
+            outline: 2px solid var(--secondary);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 1rem;
+            color: var(--accent);
+        }
+
+        .price-up {
+            color: #ff6b6b;
+        }
+
+        .price-down {
+            color: #51cf66;
+        }
+
+        .hotel-card {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 0.5rem 0;
+        }
+
+        .hotel-card h4 {
+            margin-bottom: 0.5rem;
+            color: var(--secondary);
+        }
+
+        .hotel-rating {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .hotel-amenities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .amenity {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .chat-messages { height: 50vh; }
+            .message { max-width: 90%; }
+            .option-btn { padding: 0.6rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Indian Hotel Booking Assistant 🏨</h1>
+          
+            <p>Find and book the best hotels across India for your perfect stay!</p>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="typing-indicator" id="typing">
+                <i class="fas fa-circle-notch fa-spin"></i> Searching for hotels...
+            </div>
+            <div class="input-container">
+                <input type="text" id="user-input" placeholder="e.g., Hotels in Goa for 2 adults from 15th June">
+                <button class="option-btn" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i> Send
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chat-messages');
+        const typingIndicator = document.getElementById('typing');
+        const userInput = document.getElementById('user-input');
+
+        // Indian hotel data (mock database)
+        const indianHotels = {
+            popular_destinations: [
+                { 
+                    name: "Taj Mahal Palace, Mumbai", 
+                    location: "Mumbai", 
+                    price: 12000, 
+                    prevPrice: 15000, 
+                    rating: 4.8,
+                    amenities: ["Pool", "Spa", "Beach View", "Free Breakfast", "WiFi"],
+                    checkIn: "15:00",
+                    checkOut: "12:00"
+                },
+                { 
+                    name: "The Oberoi Udaivilas, Udaipur", 
+                    location: "Udaipur", 
+                    price: 25000, 
+                    prevPrice: 28000, 
+                    rating: 4.9,
+                    amenities: ["Lake View", "Pool", "Spa", "Yoga Classes", "Fine Dining"],
+                    checkIn: "14:00",
+                    checkOut: "11:00"
+                },
+                { 
+                    name: "ITC Grand Chola, Chennai", 
+                    location: "Chennai", 
+                    price: 9500, 
+                    prevPrice: 11000, 
+                    rating: 4.7,
+                    amenities: ["Pool", "Gym", "Spa", "Business Center", "Multiple Restaurants"],
+                    checkIn: "14:00",
+                    checkOut: "12:00"
+                }
+            ],
+            budget_options: [
+                { 
+                    name: "Treebo Trend Sunrise, Delhi", 
+                    location: "Delhi", 
+                    price: 2200, 
+                    prevPrice: 2500, 
+                    rating: 3.9,
+                    amenities: ["AC", "WiFi", "Breakfast Available", "24/7 Reception"],
+                    checkIn: "12:00",
+                    checkOut: "11:00"
+                },
+                { 
+                    name: "OYO Townhouse, Bangalore", 
+                    location: "Bangalore", 
+                    price: 1800, 
+                    prevPrice: 2000, 
+                    rating: 3.8,
+                    amenities: ["WiFi", "Workspace", "Café", "Power Backup"],
+                    checkIn: "13:00",
+                    checkOut: "11:00"
+                }
+            ],
+            beach_resorts: [
+                { 
+                    name: "Taj Exotica Resort & Spa, Goa", 
+                    location: "Goa", 
+                    price: 18000, 
+                    prevPrice: 20000, 
+                    rating: 4.8,
+                    amenities: ["Private Beach", "Pool", "Spa", "Water Sports", "Kids Club"],
+                    checkIn: "15:00",
+                    checkOut: "12:00"
+                },
+                { 
+                    name: "The Leela Palace, Kovalam", 
+                    location: "Kovalam", 
+                    price: 21000, 
+                    prevPrice: 23000, 
+                    rating: 4.7,
+                    amenities: ["Beachfront", "Ayurvedic Spa", "Yoga", "Multiple Dining Options"],
+                    checkIn: "14:00",
+                    checkOut: "11:00"
+                }
+            ]
+        };
+
+        // User bookings data
+        let userBookings = JSON.parse(localStorage.getItem('userBookings')) || [];
+        let currentContext = 'main';
+
+        // Initialize the chat
+        function initChat() {
+            displayMainMenu();
+        }
+
+        // Create a message in the chat
+        function createMessage(content, isUser = false, options = []) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            if (isUser) messageDiv.classList.add('user-message');
+            messageDiv.innerHTML = content;
+
+            if (options.length > 0) {
+                const optionsContainer = document.createElement('div');
+                optionsContainer.classList.add('options-container');
+                options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.classList.add('option-btn');
+                    btn.innerHTML = `${opt.icon} ${opt.text}`;
+                    btn.onclick = () => handleOptionClick(opt.action);
+                    optionsContainer.appendChild(btn);
+                });
+                messageDiv.appendChild(optionsContainer);
+            }
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Show typing indicator
+        function showTyping() {
+            typingIndicator.style.display = 'block';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Hide typing indicator
+        function hideTyping() {
+            typingIndicator.style.display = 'none';
+        }
+
+        // Display main menu options
+        function displayMainMenu() {
+            currentContext = 'main';
+            createMessage('🏨 Welcome to Indian Hotel Booking Assistant! How can I help?', false, [
+                { text: 'Popular Hotels', icon: '<i class="fas fa-hotel"></i>', action: 'popular_hotels' },
+                { text: 'Budget Stays', icon: '<i class="fas fa-wallet"></i>', action: 'budget_hotels' },
+                { text: 'Beach Resorts', icon: '<i class="fas fa-umbrella-beach"></i>', action: 'beach_resorts' },
+                { text: 'My Bookings', icon: '<i class="fas fa-suitcase"></i>', action: 'view_bookings' },
+                { text: 'Search Hotels', icon: '<i class="fas fa-search"></i>', action: 'search_hotels' }
+            ]);
+        }
+
+        // Display popular hotels
+        function showPopularHotels() {
+            let hotelsList = '';
+            indianHotels.popular_destinations.forEach(hotel => {
+                const priceChange = hotel.prevPrice - hotel.price;
+                const changeClass = priceChange > 0 ? 'price-down' : priceChange < 0 ? 'price-up' : '';
+                const changeIcon = priceChange > 0 ? '▼' : priceChange < 0 ? '▲' : '➔';
+                
+                hotelsList += `
+                    <div class="hotel-card">
+                        <h4>${hotel.name}</h4>
+                        <div class="hotel-rating">${'★'.repeat(Math.floor(hotel.rating))}${'☆'.repeat(5-Math.floor(hotel.rating))} (${hotel.rating})</div>
+                        <p>₹${hotel.price} <span class="${changeClass}">${changeIcon} ₹${Math.abs(priceChange)}</span></p>
+                        <p>Location: ${hotel.location}</p>
+                        <div class="hotel-amenities">
+                            ${hotel.amenities.map(a => `<span class="amenity">${a}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            createMessage(`🏩 Top Luxury Hotels in India:<br>${hotelsList}`, false, [
+                { text: 'Book Now', icon: '<i class="fas fa-calendar-check"></i>', action: 'book_hotel' },
+                { text: 'Main Menu', icon: '<i class="fas fa-home"></i>', action: 'main' }
+            ]);
+        }
+
+        // Display budget hotels
+        function showBudgetHotels() {
+            let hotelsList = '';
+            indianHotels.budget_options.forEach(hotel => {
+                hotelsList += `
+                    <div class="hotel-card">
+                        <h4>${hotel.name}</h4>
+                        <div class="hotel-rating">${'★'.repeat(Math.floor(hotel.rating))}${'☆'.repeat(5-Math.floor(hotel.rating))} (${hotel.rating})</div>
+                        <p>₹${hotel.price} (Save ₹${hotel.prevPrice - hotel.price})</p>
+                        <p>Location: ${hotel.location}</p>
+                        <div class="hotel-amenities">
+                            ${hotel.amenities.map(a => `<span class="amenity">${a}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            createMessage(`💰 Budget-Friendly Stays (Under ₹3000/night):<br>${hotelsList}`, false, [
+                { text: 'View All', icon: '<i class="fas fa-list"></i>', action: 'popular_hotels' },
+                { text: 'Main Menu', icon: '<i class="fas fa-home"></i>', action: 'main' }
+            ]);
+        }
+
+        // Display beach resorts
+        function showBeachResorts() {
+            let hotelsList = '';
+            indianHotels.beach_resorts.forEach(hotel => {
+                hotelsList += `
+                    <div class="hotel-card">
+                        <h4>${hotel.name}</h4>
+                        <div class="hotel-rating">${'★'.repeat(Math.floor(hotel.rating))}${'☆'.repeat(5-Math.floor(hotel.rating))} (${hotel.rating})</div>
+                        <p>₹${hotel.price} (Was ₹${hotel.prevPrice})</p>
+                        <p>Location: ${hotel.location}</p>
+                        <div class="hotel-amenities">
+                            ${hotel.amenities.map(a => `<span class="amenity">${a}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            createMessage(`🏖️ Beachfront Resorts:<br>${hotelsList}`, false, [
+                { text: 'Book Now', icon: '<i class="fas fa-calendar-check"></i>', action: 'book_resort' },
+                { text: 'Main Menu', icon: '<i class="fas fa-home"></i>', action: 'main' }
+            ]);
+        }
+
+        // Create a hotel booking
+        function createBooking(hotel, checkIn, checkOut, guests) {
+            const booking = {
+                id: Date.now(),
+                hotel: hotel.name,
+                location: hotel.location,
+                price: hotel.price,
+                checkIn,
+                checkOut,
+                guests,
+                bookedAt: new Date().toLocaleString()
+            };
+            
+            userBookings.push(booking);
+            localStorage.setItem('userBookings', JSON.stringify(userBookings));
+            return booking;
+        }
+
+        // Show user bookings
+        function showUserBookings() {
+            if (userBookings.length === 0) {
+                createMessage('You have no bookings yet. Would you like to book a hotel?', false, [
+                    { text: 'Browse Hotels', icon: '<i class="fas fa-hotel"></i>', action: 'popular_hotels' },
+                    { text: 'Main Menu', icon: '<i class="fas fa-home"></i>', action: 'main' }
+                ]);
+                return;
+            }
+            
+            let bookingsList = userBookings.map(booking => `
+                <div class="hotel-card">
+                    <h4>${booking.hotel}</h4>
+                    <p>📍 ${booking.location}</p>
+                    <p>💰 ₹${booking.price} per night</p>
+                    <p>📅 ${booking.checkIn} to ${booking.checkOut}</p>
+                    <p>👥 ${booking.guests} guests</p>
+                    <p>Booked on: ${booking.bookedAt}</p>
+                </div>
+            `).join('');
+            
+            createMessage(`📋 Your Hotel Bookings:<br>${bookingsList}`, false, [
+                { text: 'Book Another', icon: '<i class="fas fa-plus"></i>', action: 'search_hotels' },
+                { text: 'Main Menu', icon: '<i class="fas fa-home"></i>', action: 'main' }
+            ]);
+        }
+
+        // Handle option clicks
+        function handleOptionClick(action) {
+            showTyping();
+            
+            setTimeout(() => {
+                hideTyping();
+                
+                if (action === 'main') {
+                    displayMainMenu();
+                } 
+                else if (action === 'popular_hotels') {
+                    showPopularHotels();
+                }
+                else if (action === 'budget_hotels') {
+                    showBudgetHotels();
+                }
+                else if (action === 'beach_resorts') {
+                    showBeachResorts();
+                }
+                else if (action === 'view_bookings') {
+                    showUserBookings();
+                }
+                else if (action === 'search_hotels') {
+                    currentContext = 'search_hotels';
+                    createMessage('🔍 Where would you like to stay? Please specify:<br>- Location (e.g., Goa)<br>- Dates (e.g., 15-20 June)<br>- Number of guests', false, [
+                        { text: 'Popular Cities', icon: '<i class="fas fa-city"></i>', action: 'popular_hotels' },
+                        { text: 'Main Menu', icon: '<i class="fas fa-home"></i>', action: 'main' }
+                    ]);
+                }
+                else if (action.startsWith('book_')) {
+                    const hotelType = action.replace('book_', '');
+                    let hotels = [];
+                    
+                    if (hotelType === 'hotel') hotels = indianHotels.popular_destinations;
+                    else if (hotelType === 'resort') hotels = indianHotels.beach_resorts;
+                    
+                    if (hotels.length > 0) {
+                        currentContext = 'booking_' + hotelType;
+                        createMessage(`Which ${hotelType} would you like to book?`, false, [
+                            ...hotels.slice(0, 3).map((hotel, i) => ({
+                                text: hotel.name,
+                                icon: '<i class="fas fa-bed"></i>',
+                                action: `select_${hotelType}_${i}`
+                            })),
+                            { text: 'Main Menu', icon: '<i class="fas fa-home"></i>', action: 'main' }
+                        ]);
+                    }
+                }
+                else if (action.startsWith('select_')) {
+                    const parts = action.split('_');
+                    const hotelType = parts[1];
+                    const index = parseInt(parts[2]);
+                    
+                    let hotel;
+                    if (hotelType === 'hotel') hotel = indianHotels.popular_destinations[index];
+                    else if (hotelType === 'resort') hotel = indianHotels.beach_resorts[index];
+                    
+                    if (hotel) {
+                        currentContext = `confirm_booking_${hotelType}_${index}`;
+                        createMessage(`📅 Please provide your booking details for ${hotel.name}:<br>
+                                     - Check-in date (e.g., 15 June)<br>
+                                     - Check-out date (e.g., 18 June)<br>
+                                     - Number of guests (e.g., 2 adults)`, false, [
+                            { text: 'View Details', icon: '<i class="fas fa-info-circle"></i>', action: `details_${hotelType}_${index}` },
+                            { text: 'Main Menu', icon: '<i class="fas fa-home"></i>', action: 'main' }
+                        ]);
+                    }
+                }
+                else if (action.startsWith('details_')) {
+                    const parts = action.split('_');
+                    const hotelType = parts[1];
+                    const index = parseInt(parts[2]);
+                    
+                    let hotel;
+                    if (hotelType === 'hotel') hotel = indianHotels.popular_destinations[index];
+                    else if (hotelType === 'resort') hotel = indianHotels.beach_resorts[index];
+                    
+                    if (hotel) {
+                        createMessage(`ℹ️ ${hotel.name} Details:<br>
+                                     <div class="hotel-card">
+                                         <h4>${hotel.name}</h4>
+                                         <div class="hotel-rating">${'★'.repeat(Math.floor(hotel.rating))}${'☆'.repeat(5-Math.floor(hotel.rating))} (${hotel.rating})</div>
+                                         <p>₹${hotel.price} per night</p>
+                                         <p>Location: ${hotel.location}</p>
+                                         <p>Check-in: ${hotel.checkIn} | Check-out: ${hotel.checkOut}</p>
+                                         <div class="hotel-amenities">
+                                             ${hotel.amenities.map(a => `<span class="amenity">${a}</span>`).join('')}
+                                         </div>
+                                     </div>`, false, [
+                            { text: 'Book Now', icon: '<i class="fas fa-calendar-check"></i>', action: `select_${hotelType}_${index}` },
+                            { text: 'Main Menu', icon: '<i class="fas fa-home"></i>', action: 'main' }
+                        ]);
+                    }
+                }
+            }, 500);
+        }
+
+        // Process user message
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            // Add user message to chat
+            createMessage(message, true);
+            userInput.value = '';
+            
+            showTyping();
+            
+            setTimeout(() => {
+                if (currentContext.startsWith('confirm_booking_')) {
+                    // Parse booking details
+                    const parts = currentContext.split('_');
+                    const hotelType = parts[2];
+                    const index = parseInt(parts[3]);
+                    
+                    let hotel;
+                    if (hotelType === 'hotel') hotel = indianHotels.popular_destinations[index];
+                    else if (hotelType === 'resort') hotel = indianHotels.beach_resorts[index];
+                    
+                    if (hotel) {
+                        // Simple parsing (in a real app, you'd use more sophisticated parsing)
+                        const dateMatch = message.match(/(\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*)/gi);
+                        const guestMatch = message.match(/\d+\s*(?:adults?|guests?|people)/i);
+                        
+                        let checkIn = dateMatch ? dateMatch[0] : '15 June';
+                        let checkOut = dateMatch && dateMatch.length > 1 ? dateMatch[1] : '18 June';
+                        let guests = guestMatch ? guestMatch[0] : '2 adults';
+                        
+                        // Create booking
+                        const booking = createBooking(hotel, checkIn, checkOut, guests);
+                        
+                        createMessage(`✅ Booking confirmed at ${hotel.name}!<br>
+                                     📅 ${checkIn} to ${checkOut}<br>
+                                     👥 ${guests}<br>
+                                     💰 Total: ₹${hotel.price * 3} (for 3 nights)`, false, [
+                            { text: 'View Bookings', icon: '<i class="fas fa-suitcase"></i>', action: 'view_bookings' },
+                            { text: 'Book Another', icon: '<i class="fas fa-plus"></i>', action: 'search_hotels' }
+                        ]);
+                        
+                        currentContext = 'main';
+                    }
+                }
+                else if (currentContext === 'search_hotels') {
+                    // Simple location matching for Indian cities
+                    const cities = ["Delhi", "Mumbai", "Bangalore", "Chennai", "Hyderabad", 
+                                   "Kolkata", "Goa", "Jaipur", "Udaipur", "Kovalam"];
+                    
+                    const foundCity = cities.find(city => message.includes(city));
+                    
+                    if (foundCity) {
+                        let hotelsInCity = [];
+                        
+                        // Combine all hotel types and filter by location
+                        Object.values(indianHotels).forEach(category => {
+                            category.forEach(hotel => {
+                                if (hotel.location === foundCity) {
+                                    hotelsInCity.push(hotel);
+                                }
+                            });
+                        });
+                        
+                        if (hotelsInCity.length > 0) {
+                            createMessage(`🏨 Hotels in ${foundCity}:`, false, [
+                                ...hotelsInCity.slice(0, 3).map((hotel, i) => ({
+                                    text: hotel.name,
+                                    icon: '<i class="fas fa-bed"></i>',
+                                    action: `select_custom_${i}`
+                                })),
+                                { text: 'Main Menu', icon: '<i class="fas fa-home"></i>', action: 'main' }
+                            ]);
+                        } else {
+                            createMessage(`No hotels found in ${foundCity}. Would you like to search another location?`, false, [
+                                { text: 'Try Again', icon: '<i class="fas fa-search"></i>', action: 'search_hotels' },
+                                { text: 'Popular Cities', icon: '<i class="fas fa-city"></i>', action: 'popular_hotels' }
+                            ]);
+                        }
+                    } else {
+                        createMessage('Please specify an Indian city for your hotel search (e.g., "Hotels in Goa")', false, [
+                            { text: 'Popular Cities', icon: '<i class="fas fa-city"></i>', action: 'popular_hotels' },
+                            { text: 'Main Menu', icon: '<i class="fas fa-home"></i>', action: 'main' }
+                        ]);
+                    }
+                }
+                else {
+                    // Default response for general messages
+                    createMessage(`🇮🇳 I can help you find and book hotels across India. Try asking about:<br>
+                                 - "Hotels in Goa"<br>
+                                 - "Budget stays in Delhi"<br>
+                                 - "Book a luxury hotel in Mumbai"`, false, [
+                        { text: 'Popular Hotels', icon: '<i class="fas fa-hotel"></i>', action: 'popular_hotels' },
+                        { text: 'My Bookings', icon: '<i class="fas fa-suitcase"></i>', action: 'view_bookings' },
+                        { text: 'Main Menu', icon: '<i class="fas fa-home"></i>', action: 'main' }
+                    ]);
+                }
+                
+                hideTyping();
+            }, 1000);
+        }
+
+        // Handle Enter key press
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Initialize the chat
+        initChat();
+    </script>
+</body>
+</html>
